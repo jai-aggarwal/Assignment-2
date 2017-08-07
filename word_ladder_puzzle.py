@@ -45,17 +45,23 @@ Implementation details:
 from puzzle import Puzzle
 
 
-CHARS = 'abcdefghijklmnopqrstuvwyz'
+CHARS = 'abcdefghijklmnopqrstuvwxyz'
 
 
 class WordLadderPuzzle(Puzzle):
-    """A word ladder puzzle."""
-    # TODO: add to this list of private attributes!
-    # === Private attributes ===
-    # @type _words: list[str]
-    #     List of allowed English words
-
-    def __init__(self, start, target):
+    """A word ladder puzzle.
+    === Private attributes ===
+    @type _words: list[str]
+        List of allowed English words
+    @type _start: str
+        Initial state of puzzle
+    @type _target: target 
+        Goal state of puzzle
+    @type _hist : tuple
+        Past words seen before 'start'    
+    
+    """
+    def __init__(self, start, target, hist):
         """Create a new word ladder puzzle with given start and target words.
 
         Note: you may add OPTIONAL arguments to this constructor,
@@ -71,6 +77,10 @@ class WordLadderPuzzle(Puzzle):
         with open('wordsEn.txt') as wordfile:
             for line in wordfile:
                 self._words.append(line.strip())
+        self._start = start
+        self._target = target
+        self._hist = hist
+        self._current = start
 
         # TODO: Complete the constructor.
 
@@ -80,7 +90,7 @@ class WordLadderPuzzle(Puzzle):
         return ' '.join(self._hist)
 
     def is_solved(self):
-        pass
+        return self._current == self._target
 
     def extensions(self):
         """Return a list of possible new states after a valid move.
@@ -98,4 +108,25 @@ class WordLadderPuzzle(Puzzle):
         @type self: WordLadderPuzzle
         @rtype: list[WordLadderPuzzle]
         """
-        pass
+        total = []
+        for index in range(len(self._current)):
+            for char in CHARS:
+                cur = list(self._current)
+                cur[index] = char
+                new = "".join(cur)
+                if (new in self._words) and (new not in self._hist):
+                    new_state = WordLadderPuzzle(new, self._target, self._hist)
+                    total.append(new_state)
+        return total
+
+
+    def move(self, new_word):
+        possible_states = self.extensions()
+        new_state = WordLadderPuzzle(new_word, self._target, self._hist)
+        if new_state not in possible_states: return False
+        return new_state
+
+
+
+
+
