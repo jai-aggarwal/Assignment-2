@@ -46,7 +46,6 @@ def solve(puzzle, verbose=False):
             print(i)
     return final
 
-
 def solve_complete(puzzle, verbose=False):
     """Return all solutions of the puzzle.
 
@@ -63,7 +62,16 @@ def solve_complete(puzzle, verbose=False):
     @type verbose: bool
     @rtype: list[Puzzle]
     """
-    pass
+    all_solutions = []
+    all_states = []
+    next_states = puzzle.extensions()
+    for state in next_states:
+        all_states.append(state)
+        if state.is_solved():
+            all_solutions.append(state)
+        else:
+            all_solutions.extend(solve_complete(state, verbose))
+    return all_solutions
 
 
 if __name__ == '__main__':
