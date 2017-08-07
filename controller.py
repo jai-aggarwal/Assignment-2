@@ -5,7 +5,7 @@
 """Module containing the Controller class."""
 from view import TextView, WebView
 from puzzle import Puzzle
-
+from solver import solve, solve_complete
 
 class Controller:
     """Class responsible for connection between puzzles and views.
@@ -63,6 +63,22 @@ class Controller:
         # TODO: Add to this method to handle different actions.
         if action == ':EXIT':
             return ('', True)
+        elif action == ":SOLVE":
+            solution = solve(self._puzzle)
+            return (str(solution), True)
+        elif action == ":SOLVE-ALL":
+            solution = solve_complete(self._puzzle)
+            solution2 = [str(x) for x in solution]
+            with_new = list(map(lambda x: x+"\n", solution2))
+            final = "".join(with_new)
+            return (final, True)
+        elif isinstance(action, str):
+            valid_move = self._puzzle.move(action)
+            if not valid_move: return "This move is invalid."
+            self._puzzle = valid_move
+            if valid_move.is_solved():
+                return (valid_move, True)
+            return (valid_move, False)
         else:
             return (self.state(), False)
 
