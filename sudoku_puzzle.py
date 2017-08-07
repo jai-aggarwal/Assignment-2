@@ -206,6 +206,28 @@ class SudokuPuzzle(Puzzle):
             return [self._extend(letter, row_index, col_index)
                     for letter in letters]
 
+    def _format_checker(self, string):
+        comma = string.index(",")
+        right_bracket = string.index(")")
+        row = string[1:comma]
+        col = string[comma + 1: right_bracket]
+        extra_char = string[0] + string[comma:comma+2] + string[right_bracket:-1]
+        nums = "0123456789"
+        if row in nums and col in nums and string[-1] in CHARS and extra_char == "(, ) -> ":
+            return (True, int(row), int(col), string[-1])
+        return (False, "This is false.")
+
+
+
+    def move(self, new_input):
+        valid = self._format_checker(new_input)
+        if not valid[0]: return valid[0]
+        grid_copy = self._grid[:]
+        grid_copy[valid[1]][valid[2]] = valid[3]
+        return SudokuPuzzle(grid_copy)
+
+
+
     # ------------------------------------------------------------------------
     # Helpers for method 'extensions'
     # ------------------------------------------------------------------------
@@ -221,6 +243,7 @@ class SudokuPuzzle(Puzzle):
         @rtype: list[str]
         """
         # TODO: Change this method to only return valid moves.
+
         return list(CHARS[:self._n])
 
     def _extend(self, letter, row_index, col_index):
