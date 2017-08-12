@@ -73,13 +73,73 @@ def solve_complete(puzzle, verbose=False):
             all_solutions.extend(solve_complete(state, verbose))
     return all_solutions
 
+def _helper_hint_by_depth(puzzle, n):
+    """ Return True if there is a soultion within or at n steps
+
+    Precondition: n >= 1.
+
+    @type puzzle: Puzzle
+    @type n: int
+    @rtype: bool
+    """
+    found = False
+    if n >= 1:
+        for i in puzzle.extensions():
+            if i.is_solved():
+                found = True
+            else:
+                found = hint_by_depth(i, n - 1)
+    # else n < 1 and solutions beyond n !!
+    return found
+
+
+def hint_by_depth(puzzle, n):
+    """Return a hint for the given puzzle state.
+
+    Precondition: n >= 1.
+
+    If <puzzle> is already solved, return the string ’Already at a solution!’
+    If <puzzle> cannot lead to a solution or other valid state within <n> moves,
+    return the string ’No possible extensions!’
+
+    @type puzzle: Puzzle
+    @type n: int
+    @rtype: str
+    """
+    if puzzle.is_solved():
+        return 'Already at a solution!'
+    elif not solve(puzzle):
+        return 'No possible extensions!'
+    else:
+        x = puzzle.extensions()
+        for i in x:
+            if _helper_hint_by_depth(i, n - 1):
+                return str(i)
+        return str(x[0])
+
+
 
 if __name__ == '__main__':
     from sudoku_puzzle import SudokuPuzzle
-    s = SudokuPuzzle([['', '', '', ''],
-                      ['', '', '', ''],
-                      ['C', 'D', 'A', 'B'],
-                      ['A', 'B', 'C', 'D']])
+    s = SudokuPuzzle(
+        [['E', 'C', '', '', 'G', '', '', '', ''],
+         ['F', '', '', 'A', 'I', 'E', '', '', ''],
+         ['', 'I', 'H', '', '', '', '', 'F', ''],
+         ['H', '', '', '', 'F', '', '', '', 'C'],
+         ['D', '', '', 'H', '', 'C', '', '', 'A'],
+         ['G', '', '', '', 'B', '', '', '', 'F'],
+         ['', 'F', '', '', '', '', 'B', 'H', ''],
+         ['', '', '', 'D', 'A', 'I', '', '', 'E'],
+         ['', '', '', '', 'H', '', '', 'G', 'I']]
+    )
 
-    solution = solve(s)
+    solution = solve_complete(s)
     print(solution)
+    for i in solution:
+        print(i)
+    """
+
+    from word_ladder_puzzle import WordLadderPuzzle
+    w = WordLadderPuzzle("make", "cure")
+    solution = solve(w)
+    print(solution)"""
