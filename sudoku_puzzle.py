@@ -210,19 +210,29 @@ class SudokuPuzzle(Puzzle):
         comma = string.index(",")
         right_bracket = string.index(")")
         row = string[1:comma]
-        col = string[comma + 1: right_bracket]
+        col = string[comma + 2: right_bracket]
         extra_char = string[0] + string[comma:comma+2] + string[right_bracket:-1]
         nums = "0123456789"
         if row in nums and col in nums and string[-1] in CHARS and extra_char == "(, ) -> ":
             return (True, int(row), int(col), string[-1])
         return (False, "This is false.")
 
-
+    def deepcopy(self, lst):
+        new_copy = []
+        for i in lst:
+            if isinstance(i, list):
+                new_copy.append(self.deepcopy(i))
+            else:
+                new_copy.append(i)
+        return new_copy
 
     def move(self, new_input):
         valid = self._format_checker(new_input)
         if not valid[0]: return valid[0]
-        grid_copy = self._grid[:]
+        if self._grid[valid[1]][valid[2]]: return False
+        possible_letters = self._possible_letters(valid[1], valid[2])
+        if valid[3] not in possible_letters: return False
+        grid_copy = self.deepcopy(self._grid)
         grid_copy[valid[1]][valid[2]] = valid[3]
         return SudokuPuzzle(grid_copy)
 
@@ -231,6 +241,14 @@ class SudokuPuzzle(Puzzle):
     # ------------------------------------------------------------------------
     # Helpers for method 'extensions'
     # ------------------------------------------------------------------------
+    def sq_helper(self, index):
+        m = int(sqrt(self._n))
+        x = 0
+        for i in range(1, m+1):
+            if m*(i-1) <= index < m*i:
+                x = m*(i-1)
+        return x
+
     def _possible_letters(self, row_index, col_index):
         """Return a list of the possible letters for a cell.
 
@@ -242,9 +260,31 @@ class SudokuPuzzle(Puzzle):
         @type col_index: int
         @rtype: list[str]
         """
-        # TODO: Change this method to only return valid moves.
+        row_letters = []
+        column_letters = []
+        block_letters = []
 
-        return list(CHARS[:self._n])
+        r = self._grid[row_index]
+        if sorted(r) != list(CHARS[:self._n]):
+            for i in r:
+                row_letters.append(i)
+
+        if sorted([row[col_index] for row in self._grid]) != list(CHARS[:self._n]):
+            column_letters = [row[col_index] for row in self._grid]
+
+        m = int(sqrt(self._n))
+        x = self.sq_helper(row_index)
+        y = self.sq_helper(col_index)
+        items = [self._grid[x + i][y + j] for i in range(m) for j in range(m)]
+        if sorted(items) != list(CHARS[:self._n]):
+            for i in items:
+                block_letters.append(i)
+        possible_letters = []
+        for i in CHARS[:self._n]:
+            if i not in row_letters and i not in column_letters \
+                    and i not in block_letters:
+                possible_letters.append(i)
+        return possible_letters
 
     def _extend(self, letter, row_index, col_index):
         """Return a new Sudoku puzzle obtained after one move.
@@ -279,6 +319,7 @@ class SudokuPuzzle(Puzzle):
         new_grid = [row.copy() for row in self._grid]
         new_grid[row_index][col_index] = letter
         return SudokuPuzzle(new_grid)
+
 
 
 if __name__ == '__main__':
