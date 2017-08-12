@@ -61,7 +61,7 @@ class WordLadderPuzzle(Puzzle):
         Past words seen before 'start'    
     
     """
-    def __init__(self, start, target, hist):
+    def __init__(self, start, target, hist=[]):
         """Create a new word ladder puzzle with given start and target words.
 
         Note: you may add OPTIONAL arguments to this constructor,
@@ -80,6 +80,7 @@ class WordLadderPuzzle(Puzzle):
         self._start = start
         self._target = target
         self._hist = hist
+        self._hist.append(start)
         self._current = start
 
         # TODO: Complete the constructor.
@@ -115,10 +116,10 @@ class WordLadderPuzzle(Puzzle):
                 cur[index] = char
                 new = "".join(cur)
                 if (new in self._words) and (new not in self._hist):
-                    new_state = WordLadderPuzzle(new, self._target, self._hist)
+                    copy = self.deepcopy(self._hist)
+                    new_state = WordLadderPuzzle(new, self._target, copy)
                     total.append(new_state)
         return total
-
 
     def move(self, new_word):
         possible_states = self.extensions()
@@ -126,7 +127,13 @@ class WordLadderPuzzle(Puzzle):
         if new_state not in possible_states: return False
         return new_state
 
-
-
+    def deepcopy(self, lst):
+        new_copy = []
+        for i in lst:
+            if isinstance(i, list):
+                new_copy.append(self.deepcopy(i))
+            else:
+                new_copy.append(i)
+        return new_copy
 
 
